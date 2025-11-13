@@ -77,7 +77,7 @@
       </template>
 
       <template v-else>
-        <RouterLink to="/auth" class="btn btn-outline-light btn-sm">Ingresar</RouterLink>
+        <RouterLink to="/auth" class="btn btn-login-yellow btn-sm">Ingresar</RouterLink>
       </template>
     </nav>
 
