@@ -38,10 +38,14 @@ export const recommendationService = {
       .select(`
         id, title, description, ask_price_bind, main_image_path,
         owner_id, status, created_at,
-        size_id, style_id, condition_id, genre_id,
+        size_id, condition_id, genre_id,
         sizes:sizes!items_size_id_fkey!left ( name ),
         brands:brands!items_brand_id_fkey!left ( name ),
-        owner:profiles!items_owner_id_fkey!left ( username )
+        owner:profiles!items_owner_id_fkey!left ( username ),
+        item_styles!left(
+          style_id,
+          styles:styles!item_styles_style_id_fkey(id, name)
+        )
       `)
       .eq('status', 'approved')
       .in('size_id', sizeIds)
@@ -77,7 +81,10 @@ export const recommendationService = {
 
     // Etiquetas de coincidencia
     const withFlags = pool.map(it => {
-      const styleMatch = it.style_id ? sets.styles.has(it.style_id) : false
+      // Verificar si alguno de los estilos del item está en las preferencias del usuario
+      const itemStyleIds = it.item_styles?.map(is => is.style_id) || []
+      const styleMatch = itemStyleIds.some(sid => sets.styles.has(sid))
+
       const condMatch  = it.condition_id ? sets.conditions.has(it.condition_id) : false
 
       // Puntaje según tabla pedida

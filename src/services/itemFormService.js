@@ -15,8 +15,11 @@ export const itemFormService = {
     const user = session?.session?.user
     if (!user) throw new Error('No hay sesión activa')
 
+    // Extraer style_ids del formData (ahora es un array)
+    const { style_ids, ...itemData } = formData
+
     const payload = {
-      ...formData,
+      ...itemData,
       owner_id: user.id,               // profiles.id === auth.users.id
       status: 'draft',                 // <<< antes: 'revision'
       created_at: new Date().toISOString(),
@@ -25,6 +28,12 @@ export const itemFormService = {
 
     const { data, error } = await supabase.from('items').insert(payload).select().single()
     if (error) throw error
+
+    // Guardar estilos en la tabla pivot si se proporcionaron
+    if (style_ids && style_ids.length > 0) {
+      await itemService.addItemStyles(data.id, style_ids)
+    }
+
     return data
   },
 
@@ -174,8 +183,17 @@ export const itemFormService = {
    * Paso 3c: Actualizar campos del draft (parcial)
    */
   async updateDraft(itemId, patch) {
-    patch.updated_at = new Date().toISOString()
-    const updated = await itemService.update(itemId, patch)
+    // Extraer style_ids si está presente
+    const { style_ids, ...itemPatch } = patch
+
+    itemPatch.updated_at = new Date().toISOString()
+    const updated = await itemService.update(itemId, itemPatch)
+
+    // Actualizar estilos si se proporcionaron
+    if (style_ids !== undefined) {
+      await itemService.updateItemStyles(itemId, style_ids)
+    }
+
     return updated
   },
 
