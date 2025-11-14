@@ -7,17 +7,22 @@
       <div v-else-if="!item" class="text-muted">No se encontró la publicación.</div>
 
       <div v-else class="card p-4 shadow-sm">
+        <!-- Mensaje de estado en revisión -->
+        <div v-if="isInReview" class="alert alert-info mb-3">
+          Esta prenda está en revisión y no puede ser editada. Pronto recibirás una respuesta sobre su publicación.
+        </div>
+
         <div class="row g-4">
           <!-- Columna A: Formulario editable -->
           <div class="col-12 col-lg-6">
             <div class="mb-3">
               <label class="form-label">Título</label>
-              <input v-model="form.title" class="form-control" />
+              <input v-model="form.title" class="form-control" maxlength="30" required :disabled="isInReview" />
             </div>
 
             <div class="mb-3">
               <label class="form-label">Descripción</label>
-              <textarea v-model="form.description" class="form-control" rows="3"></textarea>
+              <textarea v-model="form.description" class="form-control" rows="3" :disabled="isInReview"></textarea>
             </div>
 
             <div class="row g-3">
@@ -27,6 +32,7 @@
                   table="garment_types"
                   v-model="form.garment_type_id"
                   placeholder="Buscar tipo..."
+                  :disabled="isInReview"
                 />
               </div>
 
@@ -36,6 +42,7 @@
                   table="genres"
                   v-model="form.genre_id"
                   placeholder="Buscar género..."
+                  :disabled="isInReview"
                 />
               </div>
 
@@ -45,6 +52,7 @@
                   table="brands"
                   v-model="form.brand_id"
                   placeholder="Buscar marca..."
+                  :disabled="isInReview"
                 />
               </div>
 
@@ -54,6 +62,7 @@
                   table="materials"
                   v-model="form.material_id"
                   placeholder="Buscar material..."
+                  :disabled="isInReview"
                 />
               </div>
 
@@ -63,6 +72,7 @@
                   table="conditions"
                   v-model="form.condition_id"
                   placeholder="Buscar condición..."
+                  :disabled="isInReview"
                 />
               </div>
 
@@ -72,6 +82,7 @@
                   table="colors"
                   v-model="form.color_id"
                   placeholder="Buscar color..."
+                  :disabled="isInReview"
                 />
               </div>
 
@@ -83,17 +94,19 @@
                     v-model="form.style_ids[index]"
                     placeholder="Buscar estilo..."
                     class="flex-grow-1"
+                    :disabled="isInReview"
                   />
                   <button
                     type="button"
                     class="btn btn-outline-danger btn-sm"
                     @click="removeStyle(index)"
-                    v-if="form.style_ids.length > 1"
+                    v-if="form.style_ids.length > 1 && !isInReview"
                   >
                     ✕
                   </button>
                 </div>
                 <button
+                  v-if="!isInReview"
                   type="button"
                   class="btn btn-outline-secondary btn-sm mt-2"
                   @click="addStyle"
@@ -108,6 +121,7 @@
                   table="sizes"
                   v-model="form.size_id"
                   placeholder="Buscar talle..."
+                  :disabled="isInReview"
                 />
               </div>
             </div>
@@ -115,29 +129,30 @@
             <hr />
             <div class="mb-3">
               <label class="form-label">Precio de publicación (Binds)</label>
-              <input type="number" class="form-control" v-model.number="form.ask_price_bind" min="0" />
+              <input type="number" class="form-control" v-model.number="form.ask_price_bind" min="0" :disabled="isInReview" />
               <div class="form-text" v-if="item?.recommended_price_bind">
                 Sugerido: {{ Math.round(item.recommended_price_bind * 0.9) }} – {{ Math.round(item.recommended_price_bind * 1.1) }} Binds
               </div>
             </div>
 
             <div class="d-flex gap-2">
-              <button class="btn btn-outline-secondary" :disabled="saving" @click="saveChanges">Actualizar</button>
-              <button class="btn btn-dark" :disabled="publishing" @click="publish">Publicar</button>
-              <button class="btn btn-outline-danger ms-auto" :disabled="deleting" @click="del">Eliminar borrador</button>
+              <button v-if="!isInReview" class="btn btn-outline-secondary" :disabled="saving" @click="saveChanges">Actualizar</button>
+              <button v-if="!isInReview" class="btn btn-dark" :disabled="publishing" @click="publish">Publicar</button>
+              <button v-if="!isInReview" class="btn btn-outline-danger ms-auto" :disabled="deleting" @click="del">Eliminar borrador</button>
             </div>
           </div>
 
           <!-- Columna B: Imágenes (reemplazo + crop local) -->
           <div class="col-12 col-lg-6">
             <div class="u-grid mb-2">
-              <UploadSlot label="Portada" role="front" :file="images.front" @crop="onCrop('front', $event)" />
-              <UploadSlot label="Atrás" role="back" :file="images.back" @crop="onCrop('back', $event)" />
-              <UploadSlot label="Etiqueta" role="tag" :file="images.tag" @crop="onCrop('tag', $event)" />
-              <UploadSlot label="Otra" role="other" multiple :list="images.others" @crop="onCrop('other', $event)" />
+              <UploadSlot label="Portada" role="front" :file="images.front" @crop="onCrop('front', $event)" :disabled="isInReview" />
+              <UploadSlot label="Atrás" role="back" :file="images.back" @crop="onCrop('back', $event)" :disabled="isInReview" />
+              <UploadSlot label="Etiqueta" role="tag" :file="images.tag" @crop="onCrop('tag', $event)" :disabled="isInReview" />
+              <UploadSlot label="Otra" role="other" multiple :list="images.others" @crop="onCrop('other', $event)" :disabled="isInReview" />
             </div>
             <div class="text-muted small">
-              * Podés reemplazar y recortar imágenes antes de publicar. El recorte de fondo de la portada se hará al publicar.
+              <span v-if="!isInReview">* Podés reemplazar y recortar imágenes antes de publicar. El recorte de fondo de la portada se hará al publicar.</span>
+              <span v-else>* Las imágenes no pueden ser modificadas mientras la prenda está en revisión.</span>
             </div>
           </div>
         </div>
@@ -160,7 +175,7 @@ import HeaderLayout from '@/layouts/AppLayout.vue'
 import AutoCompleteSelect from '@/components/AutoCompleteSelect.vue'
 import UploadSlot from '@/components/UploadSlot.vue'
 import ImageCropper from '@/components/ImageCropper.vue'
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { itemService } from '@/services/itemService'
 import { supabase } from '@/services/supabaseClient'
 import { itemFormService } from '@/services/itemFormService'
@@ -199,6 +214,12 @@ const images = reactive({
   others: [],
 })
 const crop = ref({ role: null, url: null, cb: null })
+
+// Verificar si el item está en revisión (no editable)
+const isInReview = computed(() => {
+  const status = item.value?.status
+  return status === 'review' || status === 'pending_review'
+})
 
 onMounted(loadAll)
 

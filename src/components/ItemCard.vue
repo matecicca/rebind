@@ -64,13 +64,17 @@ function publicUrl(path) {
 const badge = computed(() => {
   const s = props.item?.status
   if (s === 'draft') return 'Borrador'
-  if (s === 'review') return 'En revisión'
+  if (s === 'review' || s === 'pending_review') return 'En revisión'
   if (s === 'approved') return 'Publicado'
   if (s === 'rejected') return 'Rechazado'
   return ''
 })
 
-const disabled = computed(() => props.item?.status !== 'approved')
+const disabled = computed(() => {
+  const s = props.item?.status
+  // Solo draft y approved son clickeables; review/pending_review y rejected están deshabilitadas
+  return s === 'review' || s === 'pending_review' || s === 'rejected'
+})
 
 const styleNames = computed(() => {
   return props.item?.item_styles

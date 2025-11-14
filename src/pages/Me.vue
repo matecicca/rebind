@@ -264,10 +264,15 @@ onMounted(async () => {
 /** Decide navegación según status del item */
 function onOpen (it) {
   if (!it || !it.status) return
-  if (it.status === 'draft') return router.push(`/preupload/${it.id}`)
-  if (it.status === 'pending_review') return // sin navegación mientras se revisa
-  // approved u otros estados visibles
-  router.push(`/item/${it.id}`)
+  // Solo los drafts van a PreUpload para editar
+  if (it.status === 'draft') {
+    return router.push(`/preupload/${it.id}`)
+  }
+  // Las prendas aprobadas van a ItemPage
+  if (it.status === 'approved') {
+    router.push(`/item/${it.id}`)
+  }
+  // Las prendas en revisión no hacen nada (están deshabilitadas en ItemCard)
 }
 </script>
 

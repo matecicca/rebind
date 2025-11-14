@@ -260,6 +260,12 @@ const handleSubmit = async () => {
     return
   }
 
+  // Validar que al menos la imagen de portada esté presente
+  if (!files.value.front) {
+    alert('Debés subir al menos la imagen de portada de la prenda.')
+    return
+  }
+
   submitting.value = true
   try {
     // Filtrar style_ids vacíos
