@@ -15,7 +15,11 @@ async function _basePublicSelect() {
     created_at,
     sizes:sizes!items_size_id_fkey!left ( name ),
     brands:brands!items_brand_id_fkey!left ( name ),
-    owner:profiles!items_owner_id_fkey!left ( username )
+    owner:profiles!items_owner_id_fkey!left ( username ),
+    item_styles!left(
+      style_id,
+      styles:styles!item_styles_style_id_fkey(id, name)
+    )
   `
 }
 
@@ -26,6 +30,18 @@ export const itemService = {
   async searchPublicFeed(searchText, page = 1, pageSize = 24, filters = {}, { includeMine = false } = {}) {
   const [from, to] = pageRange(page, pageSize)
   const selectStr = await _basePublicSelect()
+
+  // Si hay filtro de estilo, primero obtenemos los item_ids que tienen ese estilo
+  let itemIdsWithStyle = null
+  if (filters.style_id) {
+    const { data: styleItems } = await supabase
+      .from('item_styles')
+      .select('item_id')
+      .eq('style_id', filters.style_id)
+    itemIdsWithStyle = styleItems?.map(si => si.item_id) || []
+    // Si no hay items con ese estilo, devolver array vacío
+    if (itemIdsWithStyle.length === 0) return []
+  }
 
   let q = supabase
     .from('items')
@@ -51,9 +67,11 @@ export const itemService = {
   if (filters.color_id)     q = q.eq('color_id', filters.color_id)
   if (filters.brand_id)     q = q.eq('brand_id', filters.brand_id)
   if (filters.condition_id) q = q.eq('condition_id', filters.condition_id)
-  if (filters.style_id)     q = q.eq('style_id', filters.style_id)
   if (filters.material_id)  q = q.eq('material_id', filters.material_id)
   if (filters.genre_id)     q = q.eq('genre_id', filters.genre_id)
+
+  // Filtro de estilo usando los item_ids obtenidos
+  if (itemIdsWithStyle) q = q.in('id', itemIdsWithStyle)
 
   const { data, error } = await q
   return unwrap(data, error)
@@ -92,6 +110,18 @@ export const itemService = {
  async getPublicFeed(page = 1, pageSize = 24, filters = {}, { includeMine = false } = {}) {
   const [from, to] = pageRange(page, pageSize)
 
+  // Si hay filtro de estilo, primero obtenemos los item_ids que tienen ese estilo
+  let itemIdsWithStyle = null
+  if (filters.style_id) {
+    const { data: styleItems } = await supabase
+      .from('item_styles')
+      .select('item_id')
+      .eq('style_id', filters.style_id)
+    itemIdsWithStyle = styleItems?.map(si => si.item_id) || []
+    // Si no hay items con ese estilo, devolver array vacío
+    if (itemIdsWithStyle.length === 0) return []
+  }
+
   let query = supabase
     .from('items')
     .select(`
@@ -105,7 +135,11 @@ export const itemService = {
       sizes:sizes!items_size_id_fkey!left ( name ),
       brands:brands!items_brand_id_fkey!left ( name ),
       garment_types:garment_types!items_garment_type_id_fkey!left ( name ),
-      owner:profiles!items_owner_id_fkey!left ( username )
+      owner:profiles!items_owner_id_fkey!left ( username ),
+      item_styles!left(
+        style_id,
+        styles:styles!item_styles_style_id_fkey(id, name)
+      )
     `)
     .eq('status', 'approved')
     .range(from, to)
@@ -123,9 +157,11 @@ export const itemService = {
   if (filters.color_id)        query = query.eq('color_id', filters.color_id)
   if (filters.brand_id)        query = query.eq('brand_id', filters.brand_id)
   if (filters.condition_id)    query = query.eq('condition_id', filters.condition_id)
-  if (filters.style_id)        query = query.eq('style_id', filters.style_id)
   if (filters.material_id)     query = query.eq('material_id', filters.material_id)
   if (filters.genre_id)        query = query.eq('genre_id', filters.genre_id)
+
+  // Filtro de estilo usando los item_ids obtenidos
+  if (itemIdsWithStyle) query = query.in('id', itemIdsWithStyle)
 
   const { data, error } = await query
   return unwrap(data, error)
@@ -153,7 +189,11 @@ export const itemService = {
         sizes:sizes!items_size_id_fkey!left ( name ),
         brands:brands!items_brand_id_fkey!left ( name ),
         garment_types:garment_types!items_garment_type_id_fkey!left ( name ),
-        owner:profiles!items_owner_id_fkey!left ( username )
+        owner:profiles!items_owner_id_fkey!left ( username ),
+        item_styles!left(
+          style_id,
+          styles:styles!item_styles_style_id_fkey(id, name)
+        )
       `)
       .eq('owner_id', profileId)
       .order('created_at', { ascending: false })
@@ -176,7 +216,6 @@ export const itemService = {
       color_id,
       brand_id,
       condition_id,
-      style_id,
       material_id,
       base_price_x,
       recommended_price_bind,
@@ -197,7 +236,10 @@ export const itemService = {
       materials:materials!items_material_id_fkey!left ( name ),
       conditions:conditions!items_condition_id_fkey!left ( name ),
       colors:colors!items_color_id_fkey!left ( name ),
-      styles:styles!items_style_id_fkey!left ( name ),
+      item_styles!left(
+        style_id,
+        styles:styles!item_styles_style_id_fkey(id, name)
+      ),
       genres:genres!items_genre_id_fkey!left ( name )
     `
     const ownerSelect = `,
@@ -236,5 +278,56 @@ export const itemService = {
       .eq('item_id', itemId)
       .order('is_primary', { ascending: false })
     return unwrap(data, error)
+  },
+
+  /** ---------- ITEM STYLES (Pivot Table) ---------- */
+
+  // Obtener todos los estilos de un ítem
+  async getItemStyles(itemId) {
+    const { data, error } = await supabase
+      .from('item_styles')
+      .select(`
+        style_id,
+        styles:styles!item_styles_style_id_fkey(id, name)
+      `)
+      .eq('item_id', itemId)
+    return unwrap(data, error)
+  },
+
+  // Agregar estilos a un ítem (array de style_ids)
+  async addItemStyles(itemId, styleIds = []) {
+    if (!styleIds || styleIds.length === 0) return []
+
+    const records = styleIds.map(styleId => ({
+      item_id: itemId,
+      style_id: styleId
+    }))
+
+    const { data, error } = await supabase
+      .from('item_styles')
+      .insert(records)
+      .select()
+    return unwrap(data, error)
+  },
+
+  // Eliminar todos los estilos de un ítem
+  async removeItemStyles(itemId) {
+    const { error } = await supabase
+      .from('item_styles')
+      .delete()
+      .eq('item_id', itemId)
+    if (error) throw error
+  },
+
+  // Actualizar estilos de un ítem (reemplaza todos)
+  async updateItemStyles(itemId, styleIds = []) {
+    // Primero eliminar todos los estilos existentes
+    await this.removeItemStyles(itemId)
+
+    // Luego agregar los nuevos (si hay)
+    if (styleIds.length > 0) {
+      return await this.addItemStyles(itemId, styleIds)
+    }
+    return []
   },
 }

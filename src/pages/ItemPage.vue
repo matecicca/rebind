@@ -153,16 +153,24 @@ function avatarUrl(path){ return path ? storageService.getPublicUrl('avatars', p
 const ownerAvatarUrl = computed(() => avatarUrl(item.value?.owner?.avatar_url || ''))
 
 // Tabla de detalles
-const details = computed(() => ([
-  { key: 'brand', label: 'Marca',         value: item.value?.brands?.name },
-  { key: 'size',  label: 'Talle',         value: item.value?.sizes?.name },
-  { key: 'color', label: 'Color',         value: item.value?.colors?.name },
-  { key: 'style', label: 'Estilo',        value: item.value?.styles?.name },
-  { key: 'mat',   label: 'Material',      value: item.value?.materials?.name },
-  { key: 'cond',  label: 'Condición',     value: item.value?.conditions?.name },
-  { key: 'gt',    label: 'Tipo de prenda',value: item.value?.garment_types?.name },
-  { key: 'genre', label: 'Género',        value: item.value?.genres?.name },
-]))
+const details = computed(() => {
+  // Obtener nombres de estilos desde item_styles
+  const styleNames = item.value?.item_styles
+    ?.map(is => is.styles?.name)
+    .filter(Boolean)
+    .join(', ') || '—'
+
+  return [
+    { key: 'brand', label: 'Marca',         value: item.value?.brands?.name },
+    { key: 'size',  label: 'Talle',         value: item.value?.sizes?.name },
+    { key: 'color', label: 'Color',         value: item.value?.colors?.name },
+    { key: 'styles', label: 'Estilos',      value: styleNames },
+    { key: 'mat',   label: 'Material',      value: item.value?.materials?.name },
+    { key: 'cond',  label: 'Condición',     value: item.value?.conditions?.name },
+    { key: 'gt',    label: 'Tipo de prenda',value: item.value?.garment_types?.name },
+    { key: 'genre', label: 'Género',        value: item.value?.genres?.name },
+  ]
+})
 
 // Orden preferido para galería
 function sortByRole(list){

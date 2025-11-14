@@ -75,13 +75,31 @@
                 />
               </div>
 
-              <div class="col-12 col-md-6">
-                <label class="form-label">Estilo</label>
-                <AutoCompleteSelect
-                  table="styles"
-                  v-model="form.style_id"
-                  placeholder="Buscar estilo..."
-                />
+              <div class="col-12">
+                <label class="form-label">Estilos</label>
+                <div v-for="(styleId, index) in form.style_ids" :key="index" class="mb-2 d-flex gap-2">
+                  <AutoCompleteSelect
+                    table="styles"
+                    v-model="form.style_ids[index]"
+                    placeholder="Buscar estilo..."
+                    class="flex-grow-1"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    @click="removeStyle(index)"
+                    v-if="form.style_ids.length > 1"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary btn-sm mt-2"
+                  @click="addStyle"
+                >
+                  + Agregar estilo
+                </button>
               </div>
 
               <div class="col-12 col-md-6">
@@ -167,7 +185,7 @@ const form = reactive({
   material_id: null,
   condition_id: null,
   color_id: null,
-  style_id: null,
+  style_ids: [],
   size_id: null,
   ask_price_bind: null,
 })
@@ -204,6 +222,10 @@ async function loadAll () {
     const it = await itemService.getById(itemId)
     item.value = it
 
+    // Obtener estilos del item desde la tabla pivot
+    const itemStyles = await itemService.getItemStyles(itemId)
+    const styleIds = itemStyles.map(is => is.style_id)
+
     Object.assign(form, {
       title: it.title,
       description: it.description,
@@ -213,7 +235,7 @@ async function loadAll () {
       material_id: it.material_id,
       condition_id: it.condition_id,
       color_id: it.color_id,
-      style_id: it.style_id,
+      style_ids: styleIds.length > 0 ? styleIds : [''],
       size_id: it.size_id,
       ask_price_bind: it.ask_price_bind ?? it.recommended_price_bind ?? null,
     })
@@ -255,11 +277,25 @@ function onCropped (role, blob) {
   }
 }
 
+function addStyle() {
+  form.style_ids.push('')
+}
+
+function removeStyle(index) {
+  form.style_ids.splice(index, 1)
+}
+
 async function saveChanges () {
   try {
     saving.value = true
+    // Filtrar style_ids vacíos
+    const formData = {
+      ...form,
+      style_ids: form.style_ids.filter(id => id && id.trim() !== '')
+    }
+
     // 1) Actualizar campos del draft
-    await itemFormService.updateDraft(itemId, { ...form })
+    await itemFormService.updateDraft(itemId, formData)
 
     // 2) Reemplazar sólo roles cambiados (File)
     const changed = {
@@ -284,8 +320,14 @@ async function saveChanges () {
 async function publish () {
   try {
     publishing.value = true
+    // Filtrar style_ids vacíos
+    const formData = {
+      ...form,
+      style_ids: form.style_ids.filter(id => id && id.trim() !== '')
+    }
+
     // guardo última edición
-    await itemFormService.updateDraft(itemId, { ...form })
+    await itemFormService.updateDraft(itemId, formData)
 
     // intento recorte de fondo sobre la portada actual si existe
     if (item.value?.main_image_path) {

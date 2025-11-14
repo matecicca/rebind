@@ -21,8 +21,11 @@
     <div class="card-body">
       <h6 class="card-title mb-1">{{ item.title }}</h6>
       <div class="text-muted small mb-1">@{{ item.owner?.username || 'usuario' }}</div>
-      <div class="text-muted small mb-2">
+      <div class="text-muted small mb-1">
         {{ item.brands?.name || 'Marca desconocida' }}
+      </div>
+      <div v-if="styleNames" class="text-muted small mb-2">
+        {{ styleNames }}
       </div>
 
       <div class="d-flex align-items-center justify-content-between">
@@ -68,6 +71,13 @@ const badge = computed(() => {
 })
 
 const disabled = computed(() => props.item?.status !== 'approved')
+
+const styleNames = computed(() => {
+  return props.item?.item_styles
+    ?.map(is => is.styles?.name)
+    .filter(Boolean)
+    .join(', ') || ''
+})
 </script>
 
 <style scoped>
