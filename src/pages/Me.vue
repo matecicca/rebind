@@ -1,174 +1,222 @@
 <template>
   <HeaderLayout>
     <div class="container my-5 page-profile">
-      <!-- ====== Card cabecera de perfil ====== -->
-      <section class="card p-4 mb-4 profile-card position-relative">
-        <RouterLink
-          to="/edit-profile"
-          class="settings-icon"
-          aria-label="Editar perfil"
-          title="Editar perfil"
-        >
-          <i class="bi bi-gear"></i>
-        </RouterLink>
+      <div class="row g-4">
+        <!-- COLUMNA IZQUIERDA: Perfil (solo desktop) -->
+        <div class="col-12 col-lg-5 order-1">
+          <!-- ====== Card cabecera de perfil ====== -->
+          <section class="card p-4 profile-card position-relative">
+            <RouterLink
+              to="/edit-profile"
+              class="settings-icon"
+              aria-label="Editar perfil"
+              title="Editar perfil"
+            >
+              <i class="bi bi-gear"></i>
+            </RouterLink>
 
-        <div class="d-flex flex-column align-items-center text-center  profile-header">
-          <div class="avatar-ring mb-3">
-            <img v-if="avatarPublicUrl" :src="avatarPublicUrl" alt="Avatar" class="avatar-img" />
-            <div v-else class="avatar-placeholder">{{ initials }}</div>
-          </div>
+            <div class="d-flex flex-column align-items-center text-center profile-header">
+              <div class="avatar-ring mb-3">
+                <img v-if="avatarPublicUrl" :src="avatarPublicUrl" alt="Avatar" class="avatar-img" />
+                <div v-else class="avatar-placeholder">{{ initials }}</div>
+              </div>
 
-          <h2 class="h4 mb-1 text-capitalize">{{ displayName }}</h2>
-          <div class="text-muted">@{{ profile?.username || 'usuario' }}</div>
-          <div v-if="profile?.level" class="text-secondary small mt-1">NVL {{ profile.level }}</div>
+              <h2 class="h4 mb-1 text-capitalize">{{ displayName }}</h2>
+              <div class="text-muted">@{{ profile?.username || 'usuario' }}</div>
+              <div v-if="profile?.level" class="text-secondary small mt-1">NVL {{ profile.level }}</div>
 
-          <div class="d-flex gap-4 mt-3 small text-muted">
-            <div class="text-center">
-              <div class="fw-semibold">Seguidores</div>
-              <div>{{ followers ?? '—' }}</div>
+              <div class="d-flex gap-4 mt-3 small text-muted">
+                <div class="text-center">
+                  <div class="fw-semibold">Seguidores</div>
+                  <div>{{ followers ?? '—' }}</div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
 
-      <!-- ====== MOBILE: barra de tabs ====== -->
-      <div class="segmented-mobile d-md-none mb-3">
-        <button
-          :class="['seg-btn', { active: mobileTab === 'datos' }]"
-          @click="mobileTab = 'datos'"
-        >
-          Datos
-        </button>
-        <button
-          :class="['seg-btn', { active: mobileTab === 'publicadas' }]"
-          @click="mobileTab = 'publicadas'"
-        >
-          Mi vestidor
-        </button>
-        <button
-          :class="['seg-btn', { active: mobileTab === 'guardadas' }]"
-          @click="mobileTab = 'guardadas'"
-        >
-          Guardadas
-        </button>
-        <button
-          :class="['seg-btn', { active: mobileTab === 'seguidos' }]"
-          @click="mobileTab = 'seguidos'"
-        >
-          Seguidos
-        </button>
-      </div>
+          <!-- Información (solo desktop, siempre visible) -->
+          <section class="card p-4 shadow-sm mt-3 d-none d-lg-block">
+            <h3 class="h6 mb-3">Información</h3>
 
-      <!-- ====== Información ====== -->
-      <section
-        class="card p-4 shadow-sm mb-4"
-        :class="{ 'd-none d-md-block': mobileTab !== 'datos' }"
-      >
-        <h3 class="h6 mb-3">Información</h3>
-
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-6">
-            <div class="small text-muted">Ciudad</div>
-            <div class="fw-semibold fs-6">{{ profile?.city || '—' }}</div>
-          </div>
-          <div class="col-12 col-md-6">
-            <div class="small text-muted">Barrio</div>
-            <div class="fw-semibold fs-6">{{ profile?.neighborhood || '—' }}</div>
-          </div>
-        </div>
-
-        <!-- Preferencias -->
-        <div class="row row-cols-1 row-cols-md-2 g-3">
-          <div>
-            <div class="small text-muted">Género</div>
-            <div class="fw-semibold">
-              {{ prefs.genres?.length ? prefs.genres.join(', ') : '—' }}
+            <div class="row g-3 mb-3">
+              <div class="col-12 col-md-6">
+                <div class="small text-muted">Ciudad</div>
+                <div class="fw-semibold fs-6">{{ profile?.city || '—' }}</div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="small text-muted">Barrio</div>
+                <div class="fw-semibold fs-6">{{ profile?.neighborhood || '—' }}</div>
+              </div>
             </div>
-          </div>
-          <div>
-            <div class="small text-muted">Talle</div>
-            <div class="fw-semibold">{{ prefs.sizes?.length ? prefs.sizes.join(', ') : '—' }}</div>
-          </div>
-          <div>
-            <div class="small text-muted">Estilos</div>
-            <div class="fw-semibold">
-              {{ prefs.styles?.length ? prefs.styles.join(', ') : '—' }}
+
+            <!-- Preferencias -->
+            <div class="row row-cols-1 row-cols-md-2 g-3">
+              <div>
+                <div class="small text-muted">Género</div>
+                <div class="fw-semibold">
+                  {{ prefs.genres?.length ? prefs.genres.join(', ') : '—' }}
+                </div>
+              </div>
+              <div>
+                <div class="small text-muted">Talle</div>
+                <div class="fw-semibold">{{ prefs.sizes?.length ? prefs.sizes.join(', ') : '—' }}</div>
+              </div>
+              <div>
+                <div class="small text-muted">Estilos</div>
+                <div class="fw-semibold">
+                  {{ prefs.styles?.length ? prefs.styles.join(', ') : '—' }}
+                </div>
+              </div>
+              <div>
+                <div class="small text-muted">Estados preferibles</div>
+                <div class="fw-semibold">
+                  {{ prefs.conditions?.length ? prefs.conditions.join(', ') : '—' }}
+                </div>
+              </div>
             </div>
+          </section>
+        </div>
+
+        <!-- COLUMNA DERECHA: Tabs + Contenido -->
+        <div class="col-12 col-lg-7 order-2">
+          <!-- ====== Barra de tabs (mobile y desktop) ====== -->
+          <div class="segmented-tabs mb-3">
+            <button
+              :class="['seg-btn', { active: mobileTab === 'datos' }]"
+              @click="mobileTab = 'datos'"
+            >
+              Datos
+            </button>
+            <button
+              :class="['seg-btn', { active: mobileTab === 'publicadas' }]"
+              @click="mobileTab = 'publicadas'"
+            >
+              Mi vestidor
+            </button>
+            <button
+              :class="['seg-btn', { active: mobileTab === 'guardadas' }]"
+              @click="mobileTab = 'guardadas'"
+            >
+              Guardadas
+            </button>
+            <button
+              :class="['seg-btn', { active: mobileTab === 'seguidos' }]"
+              @click="mobileTab = 'seguidos'"
+            >
+              Seguidos
+            </button>
           </div>
-          <div>
-            <div class="small text-muted">Estados preferibles</div>
-            <div class="fw-semibold">
-              {{ prefs.conditions?.length ? prefs.conditions.join(', ') : '—' }}
+
+          <!-- ====== Información (solo mobile) ====== -->
+          <section
+            class="card p-4 shadow-sm mb-4 d-lg-none"
+            v-show="mobileTab === 'datos'"
+          >
+            <h3 class="h6 mb-3">Información</h3>
+
+            <div class="row g-3 mb-3">
+              <div class="col-12 col-md-6">
+                <div class="small text-muted">Ciudad</div>
+                <div class="fw-semibold fs-6">{{ profile?.city || '—' }}</div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="small text-muted">Barrio</div>
+                <div class="fw-semibold fs-6">{{ profile?.neighborhood || '—' }}</div>
+              </div>
             </div>
-          </div>
+
+            <!-- Preferencias -->
+            <div class="row row-cols-1 row-cols-md-2 g-3">
+              <div>
+                <div class="small text-muted">Género</div>
+                <div class="fw-semibold">
+                  {{ prefs.genres?.length ? prefs.genres.join(', ') : '—' }}
+                </div>
+              </div>
+              <div>
+                <div class="small text-muted">Talle</div>
+                <div class="fw-semibold">{{ prefs.sizes?.length ? prefs.sizes.join(', ') : '—' }}</div>
+              </div>
+              <div>
+                <div class="small text-muted">Estilos</div>
+                <div class="fw-semibold">
+                  {{ prefs.styles?.length ? prefs.styles.join(', ') : '—' }}
+                </div>
+              </div>
+              <div>
+                <div class="small text-muted">Estados preferibles</div>
+                <div class="fw-semibold">
+                  {{ prefs.conditions?.length ? prefs.conditions.join(', ') : '—' }}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ====== Mi vestidor ====== -->
+          <section
+            class="card p-3 shadow-sm mb-4"
+            v-show="mobileTab === 'publicadas'"
+          >
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <h3 class="h6 m-0">Mi vestidor</h3>
+            </div>
+
+            <div v-if="loading" class="text-center py-5 text-muted">Cargando tu vestidor…</div>
+            <div v-else-if="items.length === 0" class="text-center py-5 text-muted">
+              Aún no agregaste prendas a tu vestidor.
+            </div>
+
+            <div v-else class="horizontal-scroller">
+              <div class="card-inline compact" v-for="it in items" :key="it.id">
+                <ItemCard :item="it" :show-status="true" @open="onOpen(it)" />
+              </div>
+            </div>
+          </section>
+
+          <!-- ====== Guardadas ====== -->
+          <section
+            class="card p-3 shadow-sm mb-4"
+            v-show="mobileTab === 'guardadas'"
+          >
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <h3 class="h6 m-0">Prendas guardadas</h3>
+            </div>
+
+            <div v-if="savedLoading" class="text-center py-5 text-muted">Cargando guardados…</div>
+
+            <div v-else-if="!savedItems.length" class="horizontal-scroller">
+              <div class="card-inline placeholder-tile">Aún no guardaste prendas</div>
+            </div>
+
+            <div v-else class="horizontal-scroller">
+              <RouterLink
+                v-for="it in savedItems"
+                :key="it.id"
+                :to="`/item/${it.id}`"
+                class="text-decoration-none text-reset"
+              >
+                <div class="card-inline compact">
+                  <ItemCard :item="it" />
+                </div>
+              </RouterLink>
+            </div>
+          </section>
+
+          <!-- ====== Seguidos ====== -->
+          <section
+            class="card p-3 shadow-sm mb-4"
+            v-show="mobileTab === 'seguidos'"
+          >
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <h3 class="h6 m-0">Usuarios seguidos</h3>
+            </div>
+            <div v-if="followingLoading" class="text-center py-5 text-muted">Próximamente…</div>
+            <div v-else class="horizontal-scroller">
+              <div class="user-chip placeholder-tile">Sin contenido aún</div>
+            </div>
+          </section>
         </div>
-      </section>
-
-      <!-- ====== Mi vestidor ====== -->
-    <section
-      class="card p-3 shadow-sm mb-4"
-      :class="{ 'd-none d-md-block': mobileTab !== 'publicadas' }"
-    >
-      <div class="d-flex align-items-center justify-content-between mb-2">
-        <h3 class="h6 m-0">Mi vestidor</h3>
       </div>
-    
-      <div v-if="loading" class="text-center py-5 text-muted">Cargando tu vestidor…</div>
-      <div v-else-if="items.length === 0" class="text-center py-5 text-muted">
-        Aún no agregaste prendas a tu vestidor.
-      </div>
-    
-      <div v-else class="horizontal-scroller">
-        <div class="card-inline compact" v-for="it in items" :key="it.id">
-          <!-- 👇 Muestra el badge de estado SOLO en Me.vue -->
-          <ItemCard :item="it" :show-status="true" @open="onOpen(it)" />
-        </div>
-      </div>
-    </section>
-
-<!-- ====== Guardadas ====== -->
-<section
-  class="card p-3 shadow-sm mb-4"
-  :class="{ 'd-none d-md-block': mobileTab !== 'guardadas' }"
->
-  <div class="d-flex align-items-center justify-content-between mb-2">
-    <h3 class="h6 m-0">Prendas guardadas</h3>
-  </div>
-
-  <div v-if="savedLoading" class="text-center py-5 text-muted">Cargando guardados…</div>
-
-  <div v-else-if="!savedItems.length" class="horizontal-scroller">
-    <div class="card-inline placeholder-tile">Aún no guardaste prendas</div>
-  </div>
-
-  <div v-else class="horizontal-scroller">
-    <RouterLink
-      v-for="it in savedItems"
-      :key="it.id"
-      :to="`/item/${it.id}`"
-      class="text-decoration-none text-reset"
-    >
-      <div class="card-inline compact">
-        <!-- 👇 Sin show-status en guardadas -->
-        <ItemCard :item="it" />
-      </div>
-    </RouterLink>
-  </div>
-</section>
-
-      <!-- ====== Seguidos ====== -->
-      <section
-        class="card p-3 shadow-sm mb-4"
-        :class="{ 'd-none d-md-block': mobileTab !== 'seguidos' }"
-      >
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <h3 class="h6 m-0">Usuarios seguidos</h3>
-        </div>
-        <div v-if="followingLoading" class="text-center py-5 text-muted">Próximamente…</div>
-        <div v-else class="horizontal-scroller">
-          <div class="user-chip placeholder-tile">Sin contenido aún</div>
-        </div>
-      </section>
     </div>
   </HeaderLayout>
 </template>
@@ -378,8 +426,8 @@ function onOpen (it) {
   color: #888;
 }
 
-/* Tabs mobile */
-.segmented-mobile {
+/* Tabs (mobile y desktop) */
+.segmented-tabs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
@@ -395,6 +443,11 @@ function onOpen (it) {
   font-size: 0.9rem;
   border-radius: 999px;
   color: #6b7280;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.seg-btn:hover {
+  background: #f9fafb;
 }
 .seg-btn.active {
   background: #fff;
@@ -402,11 +455,33 @@ function onOpen (it) {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
+/* Responsive ajustes */
+@media (max-width: 991px) {
+  .segmented-tabs .seg-btn {
+    font-size: 0.85rem;
+    padding: 6px 8px;
+  }
+}
+
 @media (min-width: 768px) {
-  .segmented-mobile { display: none; }
   .card-inline { min-width: 280px; }
 }
 @media (min-width: 768px) {
   .card-inline.compact { min-width: 200px !important; }
+}
+
+/* Layout de dos columnas en desktop */
+@media (min-width: 992px) {
+  .page-profile .row {
+    align-items: flex-start;
+  }
+
+  /* Columna izquierda sticky */
+  .page-profile .col-lg-5 {
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+  }
 }
 </style>
