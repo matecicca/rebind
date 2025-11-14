@@ -196,7 +196,7 @@
             type="button"
             class="btn btn-dark"
             @click="nextStep"
-            :disabled="submitting"
+            :disabled="submitting || !canAdvance"
           >
             Avanzar →
           </button>
@@ -225,7 +225,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import AutoCompleteSelect from '@/components/AutoCompleteSelect.vue'
 import UploadSlot from '@/components/UploadSlot.vue'
 import { itemFormService } from '@/services/itemFormService'
@@ -260,8 +260,32 @@ const files = ref({
 const crop = ref({ role: null, url: null, cb: null })
 const submitting = ref(false)
 
+/** Validación para avanzar de paso */
+const canAdvance = computed(() => {
+  if (currentStep.value === 1) {
+    // Paso 1: Título es requerido
+    return form.value.title && form.value.title.trim() !== ''
+  } else if (currentStep.value === 2) {
+    // Paso 2: Tipo de prenda y género son requeridos
+    return form.value.garment_type_id && form.value.genre_id
+  }
+  return true
+})
+
 /** Navegación entre pasos */
 function nextStep() {
+  if (currentStep.value === 1 && !form.value.title.trim()) {
+    alert('Por favor, completá el título de la prenda antes de continuar.')
+    return
+  }
+
+  if (currentStep.value === 2) {
+    if (!form.value.garment_type_id || !form.value.genre_id) {
+      alert('Por favor, completá el tipo de prenda y el género antes de continuar.')
+      return
+    }
+  }
+
   if (currentStep.value < 3) {
     currentStep.value++
   }
