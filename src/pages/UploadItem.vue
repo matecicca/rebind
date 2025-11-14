@@ -3,156 +3,210 @@
     <div class="container my-5 upload-page">
       <h1 class="text-center mb-4">Subir prenda</h1>
 
+      <!-- Indicador de pasos -->
+      <div class="step-indicator mb-4">
+        <div class="step" :class="{ active: currentStep === 1, completed: currentStep > 1 }">
+          <div class="step-number">1</div>
+          <div class="step-label">Básico</div>
+        </div>
+        <div class="step-line" :class="{ active: currentStep > 1 }"></div>
+        <div class="step" :class="{ active: currentStep === 2, completed: currentStep > 2 }">
+          <div class="step-number">2</div>
+          <div class="step-label">Detalles</div>
+        </div>
+        <div class="step-line" :class="{ active: currentStep > 2 }"></div>
+        <div class="step" :class="{ active: currentStep === 3 }">
+          <div class="step-number">3</div>
+          <div class="step-label">Imágenes</div>
+        </div>
+      </div>
+
       <form @submit.prevent="handleSubmit" class="card upload-card p-4 shadow-sm">
-        <div class="form-grid">
-          <!-- Columna A: Formulario -->
-          <div class="col-a">
-            <!-- Título -->
-            <div class="mb-3">
-              <label class="form-label">Título</label>
-              <input v-model="form.title" class="form-control" maxlength="30" required />
-            </div>
+        <!-- PASO 1: Nombre y Descripción -->
+        <div v-if="currentStep === 1" class="step-content">
+          <h3 class="mb-4">Información básica</h3>
 
-            <!-- Descripción -->
-            <div class="mb-3">
-              <label class="form-label">Descripción</label>
-              <textarea v-model="form.description" class="form-control" rows="3"></textarea>
-            </div>
-
-            <!-- Resto de campos a 2 columnas -->
-            <div class="row g-3">
-              <div class="col-12 col-md-6">
-                <label class="form-label">Tipo de prenda</label>
-                <AutoCompleteSelect
-                  table="garment_types"
-                  v-model="form.garment_type_id"
-                  placeholder="Buscar tipo..."
-                />
-              </div>
-
-              <div class="col-12 col-md-6">
-                <label class="form-label">Género</label>
-                <AutoCompleteSelect
-                  table="genres"
-                  v-model="form.genre_id"
-                  placeholder="Buscar género..."
-                />
-              </div>
-
-              <div class="col-12 col-md-6">
-                <label class="form-label">Marca</label>
-                <AutoCompleteSelect
-                  table="brands"
-                  v-model="form.brand_id"
-                  placeholder="Buscar marca..."
-                />
-              </div>
-
-              <div class="col-12 col-md-6">
-                <label class="form-label">Material</label>
-                <AutoCompleteSelect
-                  table="materials"
-                  v-model="form.material_id"
-                  placeholder="Buscar material..."
-                />
-              </div>
-
-              <div class="col-12 col-md-6">
-                <label class="form-label">Condición</label>
-                <AutoCompleteSelect
-                  table="conditions"
-                  v-model="form.condition_id"
-                  placeholder="Buscar condición..."
-                />
-              </div>
-
-              <div class="col-12 col-md-6">
-                <label class="form-label">Color</label>
-                <AutoCompleteSelect
-                  table="colors"
-                  v-model="form.color_id"
-                  placeholder="Buscar color..."
-                />
-              </div>
-
-              <div class="col-12">
-                <label class="form-label">Estilos</label>
-                <div v-for="(styleId, index) in form.style_ids" :key="index" class="mb-2 d-flex gap-2">
-                  <AutoCompleteSelect
-                    table="styles"
-                    v-model="form.style_ids[index]"
-                    placeholder="Buscar estilo..."
-                    class="flex-grow-1"
-                  />
-                  <button
-                    type="button"
-                    class="btn btn-outline-danger btn-sm"
-                    @click="removeStyle(index)"
-                    v-if="form.style_ids.length > 1"
-                  >
-                    ✕
-                  </button>
-                </div>
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary btn-sm mt-2"
-                  @click="addStyle"
-                >
-                  + Agregar estilo
-                </button>
-              </div>
-
-              <div class="col-12 col-md-6">
-                <label class="form-label">Talle</label>
-                <AutoCompleteSelect
-                  table="sizes"
-                  v-model="form.size_id"
-                  placeholder="Buscar talle..."
-                />
-              </div>
-            </div>
+          <div class="mb-3">
+            <label class="form-label">Título</label>
+            <input v-model="form.title" class="form-control" maxlength="30" required />
           </div>
 
-          <!-- Columna B: Uploader con crop -->
-          <div class="col-b">
-            <div class="u-grid mb-2">
-              <UploadSlot
-                label="Portada"
-                role="front"
-                v-model:file="files.front"
-                @crop="onCrop('front', $event)"
-              />
-              <UploadSlot
-                label="Atrás"
-                role="back"
-                v-model:file="files.back"
-                @crop="onCrop('back', $event)"
-              />
-              <UploadSlot
-                label="Etiqueta"
-                role="tag"
-                v-model:file="files.tag"
-                @crop="onCrop('tag', $event)"
-              />
-              <UploadSlot
-                label="Otra"
-                role="other"
-                multiple
-                v-model:list="files.others"
-                @crop="onCrop('other', $event)"
+          <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea v-model="form.description" class="form-control" rows="5"></textarea>
+          </div>
+        </div>
+
+        <!-- PASO 2: Resto de campos -->
+        <div v-if="currentStep === 2" class="step-content">
+          <h3 class="mb-4">Detalles de la prenda</h3>
+
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label class="form-label">Tipo de prenda</label>
+              <AutoCompleteSelect
+                table="garment_types"
+                v-model="form.garment_type_id"
+                placeholder="Buscar tipo..."
               />
             </div>
-            <div class="text-muted small">
-              * Recortá cada imagen antes de subir. El recorte de fondo se hará al publicar.
+
+            <div class="col-12 col-md-6">
+              <label class="form-label">Género</label>
+              <AutoCompleteSelect
+                table="genres"
+                v-model="form.genre_id"
+                placeholder="Buscar género..."
+              />
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label class="form-label">Marca</label>
+              <AutoCompleteSelect
+                table="brands"
+                v-model="form.brand_id"
+                placeholder="Buscar marca..."
+              />
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label class="form-label">Material</label>
+              <AutoCompleteSelect
+                table="materials"
+                v-model="form.material_id"
+                placeholder="Buscar material..."
+              />
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label class="form-label">Condición</label>
+              <AutoCompleteSelect
+                table="conditions"
+                v-model="form.condition_id"
+                placeholder="Buscar condición..."
+              />
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label class="form-label">Color</label>
+              <AutoCompleteSelect
+                table="colors"
+                v-model="form.color_id"
+                placeholder="Buscar color..."
+              />
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Estilos</label>
+              <div v-for="(styleId, index) in form.style_ids" :key="index" class="mb-2 d-flex gap-2">
+                <AutoCompleteSelect
+                  table="styles"
+                  v-model="form.style_ids[index]"
+                  placeholder="Buscar estilo..."
+                  class="flex-grow-1"
+                />
+                <button
+                  type="button"
+                  class="btn btn-outline-danger btn-sm"
+                  @click="removeStyle(index)"
+                  v-if="form.style_ids.length > 1"
+                >
+                  ✕
+                </button>
+              </div>
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm mt-2"
+                @click="addStyle"
+              >
+                + Agregar estilo
+              </button>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label class="form-label">Talle</label>
+              <AutoCompleteSelect
+                table="sizes"
+                v-model="form.size_id"
+                placeholder="Buscar talle..."
+              />
             </div>
           </div>
         </div>
 
-        <div class="d-flex gap-2 mt-3">
-          <button type="button" class="btn btn-outline-secondary ms-auto" @click="resetAll" :disabled="submitting">
+        <!-- PASO 3: Imágenes -->
+        <div v-if="currentStep === 3" class="step-content">
+          <h3 class="mb-4">Imágenes de la prenda</h3>
+
+          <div class="u-grid mb-2">
+            <UploadSlot
+              label="Portada"
+              role="front"
+              v-model:file="files.front"
+              @crop="onCrop('front', $event)"
+            />
+            <UploadSlot
+              label="Atrás"
+              role="back"
+              v-model:file="files.back"
+              @crop="onCrop('back', $event)"
+            />
+            <UploadSlot
+              label="Etiqueta"
+              role="tag"
+              v-model:file="files.tag"
+              @crop="onCrop('tag', $event)"
+            />
+            <UploadSlot
+              label="Otra"
+              role="other"
+              multiple
+              v-model:list="files.others"
+              @crop="onCrop('other', $event)"
+            />
+          </div>
+          <div class="text-muted small">
+            * Recortá cada imagen antes de subir. El recorte de fondo se hará al publicar.
+          </div>
+        </div>
+
+        <!-- Botones de navegación -->
+        <div class="d-flex gap-2 mt-4">
+          <button
+            v-if="currentStep > 1"
+            type="button"
+            class="btn btn-outline-secondary"
+            @click="prevStep"
+            :disabled="submitting"
+          >
+            ← Volver atrás
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-outline-secondary ms-auto"
+            @click="resetAll"
+            :disabled="submitting"
+          >
             Limpiar
           </button>
-          <button type="submit" class="btn btn-dark" :disabled="submitting">
+
+          <button
+            v-if="currentStep < 3"
+            type="button"
+            class="btn btn-dark"
+            @click="nextStep"
+            :disabled="submitting"
+          >
+            Avanzar →
+          </button>
+
+          <button
+            v-if="currentStep === 3"
+            type="submit"
+            class="btn btn-dark"
+            :disabled="submitting"
+          >
             Ir a vista previa
           </button>
         </div>
@@ -181,6 +235,8 @@ import ImageCropper from '@/components/ImageCropper.vue'
 
 const router = useRouter()
 
+const currentStep = ref(1)
+
 const form = ref({
   title: '',
   description: '',
@@ -203,6 +259,19 @@ const files = ref({
 
 const crop = ref({ role: null, url: null, cb: null })
 const submitting = ref(false)
+
+/** Navegación entre pasos */
+function nextStep() {
+  if (currentStep.value < 3) {
+    currentStep.value++
+  }
+}
+
+function prevStep() {
+  if (currentStep.value > 1) {
+    currentStep.value--
+  }
+}
 
 /** Abrir cropper para un archivo seleccionado */
 function onCrop(role, file) {
@@ -251,6 +320,7 @@ function resetAll() {
     size_id: '',
   }
   files.value = { front: null, back: null, tag: null, others: [] }
+  currentStep.value = 1
 }
 
 /** Flujo: crea draft → sube imágenes → calcula recomendado → navega a PreUpload */
@@ -317,19 +387,88 @@ const handleSubmit = async () => {
   border-radius: 22px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   border: none;
-  max-width: 1100px;
+  max-width: 800px;
   width: 100%;
   padding: 2rem 2rem 2.5rem;
   margin-top: 0;
 }
 
-.form-grid {
-  display: grid;
-  grid-template-columns: 2fr 1.2fr;
-  gap: 24px;
+/* Indicador de pasos */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 500px;
+  margin: 0 auto;
+  gap: 0;
 }
-@media (max-width: 992px) {
-  .form-grid { grid-template-columns: 1fr; }
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e9ecef;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.step.active .step-number {
+  background: #212529;
+  color: #fff;
+}
+
+.step.completed .step-number {
+  background: #28a745;
+  color: #fff;
+}
+
+.step-label {
+  font-size: 13px;
+  color: #6c757d;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.step.active .step-label {
+  color: #212529;
+  font-weight: 600;
+}
+
+.step-line {
+  width: 80px;
+  height: 2px;
+  background: #e9ecef;
+  margin: 0 8px;
+  margin-bottom: 24px;
+  transition: background 0.3s ease;
+}
+
+.step-line.active {
+  background: #28a745;
+}
+
+/* Contenido de cada paso */
+.step-content {
+  min-height: 350px;
+}
+
+.step-content h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #212529;
 }
 
 /* Uploader */
@@ -338,74 +477,68 @@ const handleSubmit = async () => {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
-.slot {
-  aspect-ratio: 1/1;
-}
-.slot-inner {
-  background: #f4f4f4;
-  border: 1px dashed #ccc;
-  border-radius: 14px;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
-.placeholder {
-  color: #777;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  user-select: none;
-}
-.placeholder .plus {
-  font-size: 28px;
-  line-height: 1;
-}
-.thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.thumbs {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  width: 100%;
-  height: 100%;
-}
-.thumbs .thumb {
-  position: relative;
-  border-radius: 10px;
-  overflow: hidden;
-}
-.mini {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 22px;
-  height: 22px;
-  border: none;
-  border-radius: 50%;
-  background: #111;
-  color: #fff;
-  cursor: pointer;
-}
-.mini-add {
-  display: grid;
-  place-items: center;
-  background: #eaeaea;
-  border-radius: 10px;
-  font-weight: bold;
-}
 
 /* Botones */
 .btn-dark {
   border-radius: 999px;
   padding: 0.6rem 1.4rem;
+}
+
+.btn-outline-secondary {
+  border-radius: 999px;
+  padding: 0.6rem 1.4rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .upload-card {
+    padding: 1.5rem;
+  }
+
+  .step-indicator {
+    max-width: 100%;
+  }
+
+  .step-line {
+    width: 50px;
+    margin: 0 4px;
+  }
+
+  .step-number {
+    width: 35px;
+    height: 35px;
+    font-size: 14px;
+  }
+
+  .step-label {
+    font-size: 11px;
+  }
+
+  .step-content {
+    min-height: 300px;
+  }
+
+  .step-content h3 {
+    font-size: 1.25rem;
+  }
+
+  .u-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .upload-page {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+
+  .step-line {
+    width: 30px;
+  }
+
+  .step-label {
+    display: none;
+  }
 }
 </style>
