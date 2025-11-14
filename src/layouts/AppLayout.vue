@@ -16,7 +16,7 @@
       class="d-flex align-items-center text-decoration-none text-white"
     >
       <img src="@/assets/images/rebind_logo.svg" alt="Rebind" class="logo-img" />
-      <h1 class="visually-hidden">Rebind</h1>
+      <h1 class="visually-hidden">ReBind</h1>
     </RouterLink>
 
     <!-- 🔹 Navegación Desktop -->
@@ -37,44 +37,44 @@
 
       <!-- Wallet + Sesión -->
       <template v-if="isLogged">
-        <WalletBadge :balance="bindBalance" />
-              <div class="position-relative">
-      <button
-        class="profile-btn"
-        @click="toggleProfileMenuDesktop"
-        aria-label="Perfil"
-      >
-        <i class="bi bi-person"></i>
+  <WalletBadge :balance="bindBalance" />
+  <div class="position-relative">
+    <button
+      class="profile-icon-btn"
+      @click="toggleProfileMenuDesktop"
+      aria-label="Perfil"
+    >
+      <i class="bi bi-person"></i>
+    </button>
+
+    <div
+      v-if="showProfileMenuDesktop"
+      class="dropdown-menu show profile-menu"
+      style="right:0; left:auto; min-width: 200px;"
+    >
+      <button class="dropdown-item" @click="goToMeTab('publicadas')">
+        Mi vestidor
       </button>
-      
-        <div
-          v-if="showProfileMenuDesktop"
-          class="dropdown-menu show profile-menu"
-          style="right:0; left:auto; min-width: 200px;"
-        >
-          <button class="dropdown-item" @click="goToMeTab('publicadas')">
-            Mi vestidor
-          </button>
-          <button class="dropdown-item" @click="goToMeTab('datos')">
-            Mis datos
-          </button>
-          <button class="dropdown-item" @click="goToMeTab('guardadas')">
-            Prendas guardadas
-          </button>
-          <button class="dropdown-item" @click="goToMeTab('seguidos')">
-            Seguidos
-          </button>
-          <div class="dropdown-divider"></div>
-          <button class="dropdown-item" @click="goEditProfile">
-            Editar perfil
-          </button>
-          <button class="dropdown-item text-danger" @click="logout">
-            Cerrar sesión
-          </button>
-        </div>
-      </div>
-        <button class="btn btn-outline-light btn-sm" @click="logout">Salir</button>
-      </template>
+      <button class="dropdown-item" @click="goToMeTab('datos')">
+        Mis datos
+      </button>
+      <button class="dropdown-item" @click="goToMeTab('guardadas')">
+        Prendas guardadas
+      </button>
+      <button class="dropdown-item" @click="goToMeTab('seguidos')">
+        Seguidos
+      </button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item" @click="goEditProfile">
+        Editar perfil
+      </button>
+      <button class="dropdown-item text-danger" @click="logout">
+        Cerrar sesión
+      </button>
+    </div>
+  </div>
+</template>
+
 
       <template v-else>
         <RouterLink to="/auth" class="btn btn-login-yellow btn-sm">Ingresar</RouterLink>
@@ -114,7 +114,7 @@
   <div
     class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2"
   >
-    <p class="mb-0 small">© {{ currentYear }} Rebind. Todos los derechos reservados.</p>
+    <p class="mb-0 small">© {{ currentYear }} ReBind. Todos los derechos reservados.</p>
     <nav class="d-flex gap-3 small">
       <RouterLink to="/about" class="text-white text-decoration-none">Sobre nosotros</RouterLink>
       <RouterLink to="/terms" class="text-white text-decoration-none">Términos y condiciones</RouterLink>
@@ -139,7 +139,10 @@
 
   <!-- Menú Perfil (MOBILE, en bottom nav) -->
 <div class="rb-bottom-link position-relative" aria-label="Perfil">
-    <button class="profile-btn profile-btn--mobile" @click="toggleProfileMenuMobile">
+  <button
+    class="profile-icon-btn profile-icon-btn--mobile"
+    @click="toggleProfileMenuMobile"
+  >
     <i class="bi bi-person"></i>
   </button>
 
@@ -169,6 +172,7 @@
     </button>
   </div>
 </div>
+
 
   <div class="rb-bottom-link position-relative" aria-label="Más">
     <button class="btn text-white p-0" @click="toggleMoreMenu">
@@ -538,36 +542,33 @@ p{
 .profile-menu .dropdown-item.text-danger { color: #dc3545; }
 .profile-menu .dropdown-item.text-danger:hover { background: #fff1f1; }
 
-.profile-btn {
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border: 1px solid #ffffff55;
-  border-radius: 9999px;
+/* Ícono de perfil sin círculo, solo el ícono clickeable */
+.profile-icon-btn {
   background: transparent;
+  border: none;
   color: #fff;
-  display: grid;
-  place-items: center;
-  transition: background-color .15s ease, border-color .15s ease, opacity .15s ease;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
-.profile-btn:hover {
-  background-color: #ffffff22;
-  border-color: #ffffff88;
-  opacity: 0.95;
-}
-
-/* Ícono más grande */
-.profile-btn i {
-  font-size: 1.25rem; /* sube tamaño del ícono */
+/* Tamaño del ícono en desktop */
+.profile-icon-btn i {
+  font-size: 1.6rem;
   line-height: 1;
 }
 
-/* En bottom nav puede ser un toque más grande si querés */
-.profile-btn--mobile {
-  width: 44px;
-  height: 44px;
+/* Tamaño un poco más grande en mobile bottom nav */
+.profile-icon-btn--mobile i {
+  font-size: 1.8rem;
 }
+
+.profile-icon-btn:hover {
+  opacity: 0.9;
+}
+
 
 /* Evitar que el contenido quede tapado por el footer en mobile */
 @media (max-width: 767.98px) {

@@ -10,7 +10,7 @@
             <!-- Título -->
             <div class="mb-3">
               <label class="form-label">Título</label>
-              <input v-model="form.title" class="form-control" required />
+              <input v-model="form.title" class="form-control" maxlength="30" required />
             </div>
 
             <!-- Descripción -->
