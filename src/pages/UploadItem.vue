@@ -75,13 +75,31 @@
                 />
               </div>
 
-              <div class="col-12 col-md-6">
-                <label class="form-label">Estilo</label>
-                <AutoCompleteSelect
-                  table="styles"
-                  v-model="form.style_id"
-                  placeholder="Buscar estilo..."
-                />
+              <div class="col-12">
+                <label class="form-label">Estilos</label>
+                <div v-for="(styleId, index) in form.style_ids" :key="index" class="mb-2 d-flex gap-2">
+                  <AutoCompleteSelect
+                    table="styles"
+                    v-model="form.style_ids[index]"
+                    placeholder="Buscar estilo..."
+                    class="flex-grow-1"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    @click="removeStyle(index)"
+                    v-if="form.style_ids.length > 1"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary btn-sm mt-2"
+                  @click="addStyle"
+                >
+                  + Agregar estilo
+                </button>
               </div>
 
               <div class="col-12 col-md-6">
@@ -172,7 +190,7 @@ const form = ref({
   material_id: '',
   condition_id: '',
   color_id: '',
-  style_id: '',
+  style_ids: [''],
   size_id: '',
 })
 
@@ -211,6 +229,14 @@ function onCropped(role, blob) {
   }
 }
 
+function addStyle() {
+  form.value.style_ids.push('')
+}
+
+function removeStyle(index) {
+  form.value.style_ids.splice(index, 1)
+}
+
 function resetAll() {
   form.value = {
     title: '',
@@ -221,7 +247,7 @@ function resetAll() {
     material_id: '',
     condition_id: '',
     color_id: '',
-    style_id: '',
+    style_ids: [''],
     size_id: '',
   }
   files.value = { front: null, back: null, tag: null, others: [] }
@@ -236,8 +262,14 @@ const handleSubmit = async () => {
 
   submitting.value = true
   try {
+    // Filtrar style_ids vacíos
+    const formData = {
+      ...form.value,
+      style_ids: form.value.style_ids.filter(id => id && id.trim() !== '')
+    }
+
     // 1) Crear el borrador en BBDD
-    const item = await itemFormService.saveFormDraft(form.value)
+    const item = await itemFormService.saveFormDraft(formData)
 
     // 2) Subir imágenes recortadas localmente
     await itemFormService.uploadImages(item.id, {
